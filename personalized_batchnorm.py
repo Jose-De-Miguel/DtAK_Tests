@@ -72,11 +72,11 @@ class PersonalizedBatchNorm1d(nn.Module):
             variance = self.running_var
 
         normalized = (inputs - mean) / torch.rsqrt(variance + self.eps)
-        mask = 1 - torch.special.ndtr(normalized)
-        mask = mask > 0.1
 
         if self.affine:
-            normalized = (normalized * self.weight + self.bias)*mask
+            normalized = normalized * self.weight + self.bias
+            if self.training:
+                mask = (1 - torch.special.ndtr(normalized)) > 0.3
+                normalized = normalized * mask
 
-        
         return normalized
